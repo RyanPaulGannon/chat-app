@@ -1,3 +1,4 @@
+import styles from './Chat.module.css'
 import { useState, useEffect } from 'react'
 
 export default function Chat({ updatePreview }: { updatePreview: any }) {
