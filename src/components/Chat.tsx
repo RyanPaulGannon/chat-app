@@ -4,6 +4,7 @@ export default function Chat({ updatePreview }: { updatePreview: any }) {
   type ChatMessage = {
     role: string
     content: string
+    error?: string
   }
 
   const [newMessage, setNewMessage] = useState<string>('')
@@ -11,10 +12,9 @@ export default function Chat({ updatePreview }: { updatePreview: any }) {
     { role: 'system', content: 'Hello! How can I help you today?' },
   ])
   const [errorMessage, setErrorMessage] = useState<string>('')
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  const handleInputKeyPress = (
-    event: React.KeyboardEvent<HTMLInputElement>
-  ) => {
+  function handleInputKeyPress(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter') {
       if (newMessage.trim() === '') {
         setErrorMessage('Please enter a message')
@@ -39,6 +39,8 @@ export default function Chat({ updatePreview }: { updatePreview: any }) {
         content: newMessage,
       }
 
+      setTimeout(() => setIsLoading(true), 500, 0)
+
       setMessages((prevMessages) => [userMessage, ...prevMessages])
 
       const response = await fetch('/api/chat-gpt', {
@@ -50,6 +52,8 @@ export default function Chat({ updatePreview }: { updatePreview: any }) {
       })
 
       if (response.ok) {
+        setNewMessage('')
+
         const responseData = await response.json()
         const botResponse: ChatMessage = {
           role: 'bot',
@@ -57,14 +61,31 @@ export default function Chat({ updatePreview }: { updatePreview: any }) {
         }
 
         setMessages((prevMessages) => [botResponse, ...prevMessages])
-
-        setNewMessage('')
         updatePreview(responseData.message)
       } else {
-        console.error('Error sending message:', response.statusText)
+        const errorData = await response.json()
+        const errorMessage = errorData.error || 'Unknown error'
+
+        const botResponse: ChatMessage = {
+          role: 'bot',
+          content: errorMessage,
+          error: errorMessage,
+        }
+
+        setMessages((prevMessages) => [botResponse, ...prevMessages])
       }
-    } catch (error) {
-      console.error('Error sending message:', error)
+    } catch (error: any) {
+      const errorMessage = "Sorry, I'm struggling with that request"
+
+      const botResponse: ChatMessage = {
+        role: 'bot',
+        content: errorMessage,
+        error: errorMessage,
+      }
+
+      setMessages((prevMessages) => [botResponse, ...prevMessages])
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -81,6 +102,9 @@ export default function Chat({ updatePreview }: { updatePreview: any }) {
         <h1>Chat</h1>
         <div className="chat-container">
           <div className="chat-messages">
+            {isLoading && (
+              <div className="chat-message bot-message">Loading...</div>
+            )}
             {messages.map((message, index) => (
               <div
                 key={index}
