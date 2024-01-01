@@ -1,5 +1,5 @@
 export type ChatMessage = {
-  role?: string
-  content: string
-  error?: string
+    role?: string
+    content: string
+    error?: string
 }
