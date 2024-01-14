@@ -1,4 +1,3 @@
-use html_macro::html;
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
@@ -46,6 +45,15 @@ fn Chat() -> impl IntoView {
         error: Option<String>,
     }
 
+    let messages: Vec<String> = Vec::new();
+    // let new_message = "Input message".to_string();
+    let (new_message, set_new_message) = create_signal("".to_string());
+    let bot_message = "".to_string();
+
+    async fn send_message() {
+        // if new_message.trim() {}
+    }
+
     view! {
         <div class="chat-container">
         <h1 class="chat-title">Chat</h1>
@@ -57,10 +65,13 @@ fn Chat() -> impl IntoView {
             // }">
             //     {{ message.content }}
             // </div>
+            <div>{ new_message }</div>
         </div>
 
         <div class="chat-input">
-            <input class="message-input" placeholder="Type your message..." />
+            <input type="text" class="message-input" placeholder="Type your message..."
+                on:input=move |ev|
+            />
             <button class="send-button">Send</button>
         </div>
     </div>
